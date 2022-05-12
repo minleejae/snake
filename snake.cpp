@@ -219,6 +219,12 @@ int main(){
     //getch()를 받기 까지 blocking되는 이슈
     //select? 
     //키입력 -> 방향전환 -> 움직임
+
+
+    clock_t startClock;
+    clock_t endClock;
+
+    startClock = clock();
     while (1) {
         if (kbhit()) {
             key = getch();
@@ -240,17 +246,19 @@ int main(){
             }
             refresh();
         } 
-        sleep(0.5);
+        endClock = clock();
         
-        if(!sk.move()){
-            break;
-        };
-
-        draw_snakewindow(snake_win);
-        wborder(snake_win, '|','|','-','-','+','+','+','+');
-        wrefresh(snake_win);
+        if((float)(endClock - startClock)/CLOCKS_PER_SEC >= 0.4){
+            if (!sk.move()) {
+                break;
+            };
+            startClock = endClock;
+            draw_snakewindow(snake_win);
+            wrefresh(snake_win);
+        }
     }
 
+    // wborder(snake_win, '|','|','-','-','+','+','+','+');
     getch();
     delwin(snake_win);
     endwin();
