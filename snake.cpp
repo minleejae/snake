@@ -95,7 +95,7 @@ public:
     }
 
     bool check(){
-        if(map[heady][headx]==1){
+        if(map[heady][headx]==1){ // 벽
             return false;
         }
 
