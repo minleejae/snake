@@ -47,7 +47,9 @@ class Snake
 
 public:
     // 게이트는 하나만 존재하면 된다.  snake 객체에 정의
-    int gate[2][2]; // [ [y1, x1], [y2, x2] ]
+    int gate[2][2] = { { 0, 0 }, { 0, 0 } }; // [ [y1, x1], [y2, x2] ]
+    // 게이트 랜덤생성을 위한 카운트
+    int waitGate = rand() % 10 + 10;
     Snake(int map_size)
     {
         heady = map_size / 2;
@@ -75,7 +77,52 @@ public:
         curDirection = key;
         return true;
     }
-
+    // set gate position randomly
+    void setPosition(int &x, int &y)
+    {
+        int xORy = (rand() % 2);
+        int zeroOr20 = (rand() % 2);
+        if (xORy)
+        {
+            if (zeroOr20)
+            {
+                x = 20;
+                y = rand() % 19 + 1;
+            }
+            else
+            {
+                x = 0;
+                y = rand() % 19 + 1;
+            }
+        }
+        else
+        {
+            if (zeroOr20)
+            {
+                x = rand() % 19 + 1;
+                y = 20;
+            }
+            else
+            {
+                x = rand() % 19 + 1;
+                y = 0;
+            }
+        }
+    }
+    void makeGate()
+    {
+        int x1, y1, x2, y2;
+        x1 = y1 = x2 = y2 = 0;
+        while (x1 == x2 and y1 == y2)
+        {
+            setPosition(x1, y1);
+            setPosition(x2, y2);
+        };
+        gate[0][0] = y1;
+        gate[0][1] = x1;
+        gate[1][0] = y2;
+        gate[1][1] = x2;
+    }
     //현재 방향을 기준으로 움직임
     bool move()
     {
@@ -107,14 +154,16 @@ public:
             return false;
         }
 
-        // 일단 게이트가 무조건 존재한다고 가정.
-        // 게이트가 없는 경우에도 실행한다면 if문에 게이트 존재여부 검증 조건 추가 필요
+        // count wait gate
+        if (waitGate == 0)
+        {
+            makeGate();
+        }
+        waitGate--;
         if (map[heady][headx] == 7)
         {
-            int diffx = abs(gate[0][1] - gate[1][1]);
-            int diffy = abs(gate[0][0] - gate[1][0]);
-            headx = (headx < diffx) ? headx + diffx : headx - diffx;
-            heady = (heady < diffy) ? heady + diffy : heady - diffy;
+            headx = (headx == gate[0][1]) ? gate[1][1] : gate[0][1];
+            heady = (heady == gate[0][0]) ? gate[1][0] : gate[0][0];
             if (headx == 0)
                 curDirection = EAST;
             if (headx == 20)
@@ -203,61 +252,14 @@ void sleep(float seconds)
 
 void draw_snakewindow(WINDOW *snake_win);
 
-// set gate position randomly
-void setPosition(int &x, int &y)
-{
-    int xORy = (rand() % 2);
-    int zeroOr20 = (rand() % 2);
-    if (xORy)
-    {
-        if (zeroOr20)
-        {
-            x = 20;
-            y = rand() % 19 + 1;
-        }
-        else
-        {
-            x = 0;
-            y = rand() % 19 + 1;
-        }
-    }
-    else
-    {
-        if (zeroOr20)
-        {
-            x = rand() % 19 + 1;
-            y = 20;
-        }
-        else
-        {
-            x = rand() % 19 + 1;
-            y = 0;
-        }
-    }
-}
-
 int main()
 {
     WINDOW *snake_win;
     WINDOW *point_win;
-    WINDOW* mission_win;
+    WINDOW *mission_win;
 
     Snake sk = Snake(MAP_SIZE);
-
-    //---------- set gate in random position ----------
     srand(time(NULL));
-    int x1, y1, x2, y2;
-    x1 = y1 = x2 = y2 = 0;
-    while (x1 == x2 and y1 == y2)
-    {
-        setPosition(x1, y1);
-        setPosition(x2, y2);
-    };
-    sk.gate[0][0] = y1;
-    sk.gate[0][1] = x1;
-    sk.gate[1][0] = y2;
-    sk.gate[1][1] = x2;
-    //---------------- end set gate ----------------
 
     setlocale(LC_ALL, "");
     map_init();
@@ -291,7 +293,6 @@ int main()
     wborder(point_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(point_win);
 
-
     mission_win = newwin(15, 29, 18, 64);
     wbkgd(mission_win, COLOR_PAIR(5));
     wattron(mission_win, COLOR_PAIR(5));
@@ -319,8 +320,11 @@ int main()
     while (1)
     {
         // view gate
-        map[sk.gate[0][0]][sk.gate[0][1]] = 7;
-        map[sk.gate[1][0]][sk.gate[1][1]] = 7;
+        if ((sk.gate[0][0] + sk.gate[0][1] + sk.gate[1][0] + sk.gate[0][1]) > 0)
+        {
+            map[sk.gate[0][0]][sk.gate[0][1]] = 7;
+            map[sk.gate[1][0]][sk.gate[1][1]] = 7;
+        }
         if (kbhit())
         {
             key = getch();
@@ -386,30 +390,39 @@ void map_init()
     map[MAP_SIZE / 2][MAP_SIZE / 2 - 1] = 4;
 }
 
-void draw_snakewindow(WINDOW* snake_win) {
-    for (int i = 3; i < MAP_SIZE + 3; i++) {
+void draw_snakewindow(WINDOW *snake_win)
+{
+    for (int i = 3; i < MAP_SIZE + 3; i++)
+    {
         int j = 3;
-        for (; j < MAP_SIZE + 3; j++) {
-            if (map[i - 3][j - 3] == 0) { //white(빈칸)
+        for (; j < MAP_SIZE + 3; j++)
+        {
+            if (map[i - 3][j - 3] == 0)
+            { // white(빈칸)
                 mvwprintw(snake_win, i, j * 2, "\u2B1C");
             }
-            else if (map[i - 3][j - 3] == 1 || map[i - 3][j - 3] == 2) { //wall
+            else if (map[i - 3][j - 3] == 1 || map[i - 3][j - 3] == 2)
+            { // wall
                 mvwprintw(snake_win, i, j * 2, "\u2B1B");
             }
-            else if (map[i - 3][j - 3] == 3) {  //head of snake
-                mvwprintw(snake_win, i, j * 2, "🟨");
+            else if (map[i - 3][j - 3] == 3)
+            { // head of snake
+                mvwprintw(snake_win, i, j * 2, "\u2B1B");
             }
-            else if (map[i - 3][j - 3] == 4) {  //head of snake
-                mvwprintw(snake_win, i, j * 2, "🟧");
+            else if (map[i - 3][j - 3] == 4)
+            { // head of snake
+                mvwprintw(snake_win, i, j * 2, "\u2B1B");
             }
-            else if (map[i - 3][j - 3] == 5) {  // growth item
-                mvwprintw(snake_win, i, j * 2, "🟩");
-            }
-            else if (map[i - 3][j - 3] == 6) {  //posion item
-                mvwprintw(snake_win, i, j * 2, "🟥");
-            }
-            else if (map[i - 3][j - 3] == 7) {  //Gate
-                mvwprintw(snake_win, i, j * 2, "🟪");
+            // else if (map[i - 3][j - 3] == 5) {  // growth item
+            //     mvwprintw(snake_win, i, j * 2, "🟩");
+            // }
+            // else if (map[i - 3][j - 3] == 6) {  //posion item
+            //     mvwprintw(snake_win, i, j * 2, "🟥");
+            // }
+            else if (map[i - 3][j - 3] == 7)
+            { // Gate
+                // mvwprintw(snake_win, i, j * 2, "🟪");
+                mvwprintw(snake_win, i, j * 2, "\u2B1C");
             }
         }
         mvwprintw(snake_win, i, j * 2, "\n");
