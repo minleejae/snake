@@ -289,6 +289,7 @@ void draw_snakewindow(WINDOW *snake_win);
 int main(){
     WINDOW *snake_win;
     WINDOW *point_win;
+    WINDOW *mission_win;
 
     Snake sk = Snake(MAP_SIZE);
 
@@ -299,32 +300,41 @@ int main(){
     resize_term(60,100);
 
     start_color();
-    init_pair(1, COLOR_RED, COLOR_WHITE);
-    init_pair(2, COLOR_BLACK, COLOR_WHITE);
-    init_pair(3, COLOR_BLUE, COLOR_CYAN);
-    init_pair(4,COLOR_GREEN, COLOR_MAGENTA);
-    init_pair(5, COLOR_BLACK, COLOR_WHITE);
+    init_pair(1, COLOR_WHITE, COLOR_WHITE);
+    init_pair(2, COLOR_BLACK, COLOR_BLACK);
+    init_pair(3, COLOR_MAGENTA, COLOR_MAGENTA);
+    init_pair(4, COLOR_CYAN, COLOR_CYAN);
+    init_pair(5, COLOR_GREEN, COLOR_GREEN);
+    init_pair(6, COLOR_RED, COLOR_RED);
+    init_pair(7, COLOR_YELLOW, COLOR_YELLOW);
+    init_pair(8, COLOR_BLACK, COLOR_WHITE);
 
-    border('*','*','*','*','*','*','*','*');
-    mvprintw(1,1, "SNAKE GAME");
+    border('*', '*', '*', '*', '*', '*', '*', '*');
+    mvprintw(1, 1, "SNAKE GAME");
     refresh();
 
-
     //디스플레이 하드코딩 된 부분 수정 필요
-    snake_win = newwin(30,60,3,3);
-    wbkgd(snake_win,COLOR_PAIR(5));
-    wattron(snake_win, COLOR_PAIR(5));
-    mvwprintw(snake_win, 1,1, "Snake_game window");
-    wborder(snake_win, '|','|','-','-','+','+','+','+');
+    snake_win = newwin(30, 60, 3, 3);
+    wbkgd(snake_win, COLOR_PAIR(1));
+    wattron(snake_win, COLOR_PAIR(8));
+    mvwprintw(snake_win, 1, 1, "Snake_game window");
+    wborder(snake_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(snake_win);
 
-    point_win = newwin(21,21,3,65);
-    wbkgd(point_win,COLOR_PAIR(5));
-    wattron(point_win, COLOR_PAIR(5));
-    mvwprintw(point_win, 1,1, "Score_board");
-    wborder(point_win, '|','|','-','-','+','+','+','+');
+    point_win = newwin(15, 29, 3, 64);
+    wbkgd(point_win, COLOR_PAIR(1));
+    wattron(point_win, COLOR_PAIR(8));
+    mvwprintw(point_win, 1, 1, "Score_board");
+    wborder(point_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(point_win);
 
+
+    mission_win = newwin(15, 29, 18, 64);
+    wbkgd(mission_win, COLOR_PAIR(1));
+    wattron(mission_win, COLOR_PAIR(8));
+    mvwprintw(mission_win, 1, 1, "Mission");
+    wborder(mission_win, '|', '|', '-', '-', '+', '+', '+', '+');
+    wrefresh(mission_win);
 
 
     int key;
@@ -436,33 +446,41 @@ void map_init(){
     map[MAP_SIZE/2][MAP_SIZE/2-1] = 4;
 }
 
-void draw_snakewindow(WINDOW *snake_win) {
-    for (int i = 3; i < MAP_SIZE + 3; i++) {
-        int j = 3;
-        for (; j < MAP_SIZE + 3; j++) {
-            if (map[i - 3][j - 3] == 0) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1C");
+void draw_snakewindow(WINDOW* snake_win) {
+
+    for (int i = 4; i < MAP_SIZE + 4; i++) {
+        int j = 4;
+        for (; j < MAP_SIZE + 4; j++) {
+            if (map[i - 4][j - 4] == 0) { //white(빈칸)
+                wattron(snake_win, COLOR_PAIR(1));
+                mvwprintw(snake_win, i, j * 2, "  ");
+                // attroff(COLOR_PAIR(1));
             }
-            else if (map[i - 3][j - 3] == 1) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 4][j - 4] == 1 || map[i - 4][j - 4] == 2) { //wall
+                wattron(snake_win, COLOR_PAIR(2));
+                mvwprintw(snake_win, i, j * 2, "  ");
+                // attroff(COLOR_PAIR(2));
             }
-            else if (map[i - 3][j - 3] == 2) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 4][j - 4] == 3) {  //head of snake
+                wattron(snake_win, COLOR_PAIR(3));
+                mvwprintw(snake_win, i, j * 2, "  ");
+                // attroff(COLOR_PAIR(3));
             }
-            else if (map[i - 3][j - 3] == 3) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 4][j - 4] == 4) {  //head of snake
+                wattron(snake_win, COLOR_PAIR(4));
+                mvwprintw(snake_win, i, j * 2, "  ");
             }
-            else if (map[i - 3][j - 3] == 4) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 4][j - 4] == 5) {  // growth item
+                wattron(snake_win, COLOR_PAIR(5));
+                mvwprintw(snake_win, i, j * 2, "  ");
             }
-            else if (map[i - 3][j - 3] == 5) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 4][j - 4] == 6) {  //posion item
+                wattron(snake_win, COLOR_PAIR(6));
+                mvwprintw(snake_win, i, j * 2, "  ");
             }
-            else if (map[i - 3][j - 3] == 5) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
-            }
-            else if (map[i - 3][j - 3] == 5) {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 4][j - 4] == 7) {  //Gate
+                wattron(snake_win, COLOR_PAIR(7));
+                mvwprintw(snake_win, i, j * 2, "  ");
             }
         }
         mvwprintw(snake_win, i, j * 2, "\n");
