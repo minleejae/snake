@@ -240,6 +240,7 @@ int main()
 {
     WINDOW *snake_win;
     WINDOW *point_win;
+    WINDOW* mission_win;
 
     Snake sk = Snake(MAP_SIZE);
 
@@ -283,12 +284,20 @@ int main()
     wborder(snake_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(snake_win);
 
-    point_win = newwin(21, 21, 3, 65);
+    point_win = newwin(15, 29, 3, 64);
     wbkgd(point_win, COLOR_PAIR(5));
     wattron(point_win, COLOR_PAIR(5));
     mvwprintw(point_win, 1, 1, "Score_board");
     wborder(point_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(point_win);
+
+
+    mission_win = newwin(15, 29, 18, 64);
+    wbkgd(mission_win, COLOR_PAIR(5));
+    wattron(mission_win, COLOR_PAIR(5));
+    mvwprintw(mission_win, 1, 1, "Mission");
+    wborder(mission_win, '|', '|', '-', '-', '+', '+', '+', '+');
+    wrefresh(mission_win);
 
     int key;
     keypad(stdscr, TRUE);
@@ -377,44 +386,30 @@ void map_init()
     map[MAP_SIZE / 2][MAP_SIZE / 2 - 1] = 4;
 }
 
-void draw_snakewindow(WINDOW *snake_win)
-{
-    for (int i = 3; i < MAP_SIZE + 3; i++)
-    {
+void draw_snakewindow(WINDOW* snake_win) {
+    for (int i = 3; i < MAP_SIZE + 3; i++) {
         int j = 3;
-        for (; j < MAP_SIZE + 3; j++)
-        {
-            if (map[i - 3][j - 3] == 0)
-            {
+        for (; j < MAP_SIZE + 3; j++) {
+            if (map[i - 3][j - 3] == 0) { //white(빈칸)
                 mvwprintw(snake_win, i, j * 2, "\u2B1C");
             }
-            else if (map[i - 3][j - 3] == 1)
-            {
+            else if (map[i - 3][j - 3] == 1 || map[i - 3][j - 3] == 2) { //wall
                 mvwprintw(snake_win, i, j * 2, "\u2B1B");
             }
-            else if (map[i - 3][j - 3] == 2)
-            {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 3][j - 3] == 3) {  //head of snake
+                mvwprintw(snake_win, i, j * 2, "🟨");
             }
-            else if (map[i - 3][j - 3] == 3)
-            {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 3][j - 3] == 4) {  //head of snake
+                mvwprintw(snake_win, i, j * 2, "🟧");
             }
-            else if (map[i - 3][j - 3] == 4)
-            {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 3][j - 3] == 5) {  // growth item
+                mvwprintw(snake_win, i, j * 2, "🟩");
             }
-            else if (map[i - 3][j - 3] == 5)
-            {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
+            else if (map[i - 3][j - 3] == 6) {  //posion item
+                mvwprintw(snake_win, i, j * 2, "🟥");
             }
-            else if (map[i - 3][j - 3] == 6)
-            {
-                mvwprintw(snake_win, i, j * 2, "\u2B1B");
-            }
-            else if (map[i - 3][j - 3] == 7)
-            {
-                mvwprintw(snake_win, i, j * 2, "\u2B1C");
+            else if (map[i - 3][j - 3] == 7) {  //Gate
+                mvwprintw(snake_win, i, j * 2, "🟪");
             }
         }
         mvwprintw(snake_win, i, j * 2, "\n");
