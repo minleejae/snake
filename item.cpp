@@ -15,11 +15,11 @@
 // 포인트와 미션 구현
 
 using namespace std;
-enum direction {WEST, NORTH, EAST, SOUTH}; //서: 0 북:1 동:2 남:3
+enum direction { WEST, NORTH, EAST, SOUTH }; //서: 0 북:1 동:2 남:3
 
 int map[MAP_SIZE][MAP_SIZE];
 
-class Point{
+class Point {
     int currentLength = 3;
     int maxLength = 3;
     int B = currentLength / maxLength;
@@ -33,39 +33,40 @@ class Point{
     int mission_useGate;
 };
 
-class Snake{
+class Snake {
+public:
     int curDirection = WEST;
     int headx, heady;
     int length = 3;
-    deque<pair<int,int> > body; // (y,x)
+    deque<pair<int, int> > body; // (y,x)
 
 public:
 
-    Snake(int map_size){
-        heady = map_size/2;
-        headx = map_size/2-1;
-        body.push_back({map_size/2, map_size/2+1});
-        body.push_back({map_size/2, map_size/2});
-        body.push_back({map_size/2, map_size/2-1});
+    Snake(int map_size) {
+        heady = map_size / 2;
+        headx = map_size / 2 - 1;
+        body.push_back({ map_size / 2, map_size / 2 + 1 });
+        body.push_back({ map_size / 2, map_size / 2 });
+        body.push_back({ map_size / 2, map_size / 2 - 1 });
     }
 
-    deque<pair<int,int>> getBody(){
+    deque<pair<int, int>> getBody() {
         return body;
     }
 
-    int getLength(){
+    int getLength() {
         return length;
     }
 
 
-    
+
 
     //입력된 키를 기준으로 방향전환
     //방향전환시 죽는 경우 있음
-    bool turnDirection(int key){
+    bool turnDirection(int key) {
         if (abs(key - curDirection) == 2) return false;
         // else if(curDirection==WEST){
-            
+
 
         // }else if(curDirection==NORTH){
 
@@ -78,40 +79,42 @@ public:
         return true;
     }
 
-     //서: 0 북:1 동:2 남:3
-    void plusBody(){
+    //서: 0 북:1 동:2 남:3
+    void plusBody() {
         length++;
-        pair<int,int> tail = body.back();
+        pair<int, int> tail = body.front();
         int y = tail.first, x = tail.second;
-        
-        if (curDirection==0){
-            tail.second = x+1;
-            body.push_back(tail);
-        }
-        else if (curDirection==1){
-            tail.first = y+1;
-            body.push_back(tail);
-        }
-        else if (curDirection==2){
-            tail.second = x-1;
-            body.push_back(tail);
-        }
-        else{
-            tail.first = y-1;
-            body.push_back(tail);
-        }
+        body.push_front(tail);
+
+        // if (curDirection == 0) {
+        //     tail.second = x + 1;
+        //     body.push_back(tail);
+        // }
+        // else if (curDirection == 1) {
+        //     tail.first = y + 1;
+        //     body.push_back(tail);
+        // }
+        // else if (curDirection == 2) {
+        //     tail.second = x - 1;
+        //     body.push_back(tail);
+        // }
+        // else {
+        //     tail.first = y - 1;
+        //     body.push_back(tail);
+        // }
+        // map[tail.first][tail.second] = 8;
     }
 
     // scoreboard 랑 5초 지나면 다시 생기는거랑 에러 고침 & 성능 개선 
 
-    void minusBody(){
+    void minusBody() {
         length--;
-        pair<int,int> tail = body.back();
+        pair<int, int> tail = body.back();
         int y = tail.first, x = tail.second;
         body.pop_back();
     }
 
-    bool move_PlusBody(){
+    bool move_PlusBody() {
         int pop_fronty = body.front().first;
         int pop_frontx = body.front().second;
 
@@ -120,30 +123,30 @@ public:
         map[pop_fronty][pop_frontx] = 0;
         map[heady][headx] = 4;
 
-        if(curDirection==0){
-            headx-=1;
+        if (curDirection == 0) {
+            headx -= 1;
         }
-        else if(curDirection == 1){
-            heady-=1;
+        else if (curDirection == 1) {
+            heady -= 1;
         }
-        else if(curDirection == 2){
-            headx +=1;
+        else if (curDirection == 2) {
+            headx += 1;
         }
-        else{
-            heady+=1;
+        else {
+            heady += 1;
         }
 
         //벽이나 어떤 이벤트 생기나 확인
-        if(!check()){
+        if (!check()) {
             return false;
         }
 
         map[heady][headx] = 3;
-        body.push_back({heady,headx});
+        body.push_back({ heady,headx });
         return true;
     }
 
-    bool move_MinusBody(){
+    bool move_MinusBody() {
         int pop_fronty = body.front().first;
         int pop_frontx = body.front().second;
 
@@ -154,62 +157,64 @@ public:
         map[pop_fronty][pop_frontx] = 0;
         map[heady][headx] = 4;
 
-        if(curDirection==0){
-            headx-=1;
+        if (curDirection == 0) {
+            headx -= 1;
         }
-        else if(curDirection == 1){
-            heady-=1;
+        else if (curDirection == 1) {
+            heady -= 1;
         }
-        else if(curDirection == 2){
-            headx +=1;
+        else if (curDirection == 2) {
+            headx += 1;
         }
-        else{
-            heady+=1;
+        else {
+            heady += 1;
         }
 
         //벽이나 어떤 이벤트 생기나 확인
-        if(!check()){
+        if (!check()) {
             return false;
         }
 
         map[heady][headx] = 3;
-        body.push_back({heady,headx});
+        body.push_back({ heady,headx });
         return true;
     }
 
     //현재 방향을 기준으로 움직임
-    bool move(){
+    bool move() {
         int pop_fronty = body.front().first;
         int pop_frontx = body.front().second;
-        body.pop_front();
+        
         map[pop_fronty][pop_frontx] = 0;
         map[heady][headx] = 4;
 
-        if(curDirection==0){
-            headx-=1;
+        if (curDirection == 0) {
+            headx -= 1;
         }
-        else if(curDirection == 1){
-            heady-=1;
+        else if (curDirection == 1) {
+            heady -= 1;
         }
-        else if(curDirection == 2){
-            headx +=1;
+        else if (curDirection == 2) {
+            headx += 1;
         }
-        else{
-            heady+=1;
+        else {
+            heady += 1;
         }
 
+        if(map[heady][headx] != 5) body.pop_front();
+        else map[pop_fronty][pop_frontx] = 4;
         //벽이나 어떤 이벤트 생기나 확인
-        if(!check()){
+        if (!check()) {
             return false;
         }
 
         map[heady][headx] = 3;
-        body.push_back({heady,headx});
+        body.push_back({ heady,headx });
         return true;
     }
 
-    bool check(){
-        if(map[heady][headx]==1){
+    bool check() {
+        if (map[heady][headx] == 1) {
             return false;
         }
 
@@ -218,61 +223,61 @@ public:
 };
 
 // value 5
-class Item{
+class Item {
     int grow_x, grow_y, poison_x, poison_y;
     int cnt;
     int bodyLength;
     int body[][2];
 
 public:
-    Item(){
+    Item() {
         grow_x = 0; grow_y = 0;
         poison_x = 20; poison_y = 20;
     }
-    
+
     // snake의 바디값 설정
-    void setBody(deque<pair<int, int>> snake, int length){
+    void setBody(deque<pair<int, int>> snake, int length) {
         bodyLength = length;
-        for (int i=0; i< bodyLength; i++){
+        for (int i = 0; i < bodyLength; i++) {
             pair<int, int> top = snake.front();
             body[i][0] = top.first;
             body[i][1] = top.second;
-            snake.pop_front();
+            // snake.pop_front();
         }
     }
-    
+
     // 바디값이 아닌 위치를 범위 내에서 랜덤 설정(1~19)
     // posisonItem이랑 위치 겹치면 안되기 때문에 main에서 비교 후 다시 설정해주는 작업해야됨
-    pair<int,int> getGrowItemPosition(){
+    pair<int, int> getGrowItemPosition() {
         srand(time(NULL));
-        while (true){
+        while (true) {
             int y = rand() % 20;
             int x = rand() % 20;
-            if (positionIsSuited(y,x) && (y != poison_y && x != poison_x)){
+            if (positionIsSuited(y, x) && (y != poison_y && x != poison_x)) {
                 grow_y = y;
                 grow_x = x;
-                return make_pair(y,x);
+                return make_pair(y, x);
             }
         }
     }
 
-    pair<int,int> getPoisonItemPosition(){
+    pair<int, int> getPoisonItemPosition() {
         srand(time(NULL));
-        while (true){
+        while (true) {
             int y = rand() % 20;
             int x = rand() % 20;
-            if (positionIsSuited(y,x) && (y != grow_y && x != grow_x)){
+            if (positionIsSuited(y, x) && (y != grow_y && x != grow_x)) {
                 poison_y = y;
                 poison_x = x;
-                return make_pair(y,x);
+                return make_pair(y, x);
             }
         }
     }
 
-    bool positionIsSuited(int y, int x){
-        if (y !=0 && x !=0){
-            for (int i=0; i< bodyLength; i++){
-                if (y == body[i][0] || x == body[i][1]){
+    bool positionIsSuited(int y, int x) {
+        if (y != 0 && x != 0) {
+            for (int i = 0; i < bodyLength; i++) {
+                if (y == body[i][0] || x == body[i][1]) {
                     return false;
                 }
             }
@@ -286,24 +291,25 @@ public:
 
 void map_init();
 
-int kbhit(void){
+int kbhit(void) {
     int ch = getch();
     if (ch != ERR) {
         ungetch(ch);
         return 1;
-    } else {
+    }
+    else {
         return 0;
     }
 }
 
-void map_random_color(){
+void map_random_color() {
     srand(time(NULL));
 
     int x = rand();
     int y = rand();
     x %= MAP_SIZE;
     y %= MAP_SIZE;
-    while(map[x][y]!=0){
+    while (map[x][y] != 0) {
         x = rand();
         y = rand();
         x %= MAP_SIZE;
@@ -314,20 +320,20 @@ void map_random_color(){
 }
 
 //0.5초 sleep이 아닌 다른 구현 필요
-void sleep(float seconds){
+void sleep(float seconds) {
     clock_t startClock = clock();
     float secondsAhead = seconds * CLOCKS_PER_SEC;
     // do nothing until the elapsed time has passed.
-    while(clock() < startClock+secondsAhead);
+    while (clock() < startClock + secondsAhead);
     return;
 }
 
-void draw_snakewindow(WINDOW *snake_win);
+void draw_snakewindow(WINDOW* snake_win);
 
-int main(){
-    WINDOW *snake_win;
-    WINDOW *point_win;
-    WINDOW *mission_win;
+int main() {
+    WINDOW* snake_win;
+    WINDOW* point_win;
+    WINDOW* mission_win;
 
     Snake sk = Snake(MAP_SIZE);
 
@@ -335,7 +341,7 @@ int main(){
     map_init();
 
     initscr();
-    resize_term(60,100);
+    resize_term(60, 100);
 
     start_color();
     init_pair(1, COLOR_WHITE, COLOR_WHITE);
@@ -395,7 +401,7 @@ int main(){
     //초기맵 설정
     Item item = Item();
     item.setBody(sk.getBody(), sk.getLength());
-    
+
     pair<int, int> growitem = item.getGrowItemPosition();
     map[growitem.first][growitem.second] = 5;
 
@@ -404,52 +410,50 @@ int main(){
 
     while (1) {
         bool flag = false;
-            // 지렁이의 헤드가 포지션을 지나면 새로운 값 생성 후 지렁이 사이즈 하나 늘림
-            // 개선점 : 헤드가 먹이를 먹자마자 새로운 grow item이 생겨야 하고 바로 body 사이즈가 늘어나야함.
-            if (growitem.first == sk.getBody().front().first && growitem.second == sk.getBody().front().second){
-                map[growitem.first][growitem.second] = 0;
-                item.setBody(sk.getBody(), sk.getLength());
-                growitem = item.getGrowItemPosition();
-                map[growitem.first][growitem.second] = 5;
-                sk.plusBody();
-                draw_snakewindow(snake_win);
-                wrefresh(snake_win);
-            }
-            // 포인즌 아이템이 안뜸 초기에 뜨다가 말음. 
-            if (poisonitem.first == sk.getBody().front().first && poisonitem.second == sk.getBody().front().second){
-                map[poisonitem.first][poisonitem.second] = 0;
-                item.setBody(sk.getBody(), sk.getLength());
-                poisonitem = item.getPoisonItemPosition();
-                map[poisonitem.first][poisonitem.second] = 6;
-                sk.minusBody();
-                draw_snakewindow(snake_win);
-                wrefresh(snake_win);
-            }
-
         if (kbhit()) {
             key = getch();
-            if(key==259){
+            if (key == 259) {
                 // printw("up");
                 sk.turnDirection(NORTH);
             }
-            else if(key==260){
+            else if (key == 260) {
                 // printw("left");
                 sk.turnDirection(WEST);
             }
-            else if(key==258){             
+            else if (key == 258) {
                 // printw("down");
                 sk.turnDirection(SOUTH);
             }
-            else if(key == 261){
+            else if (key == 261) {
                 // printw("right");
                 sk.turnDirection(EAST);
             }
             refresh();
         }
         endClock = clock();
+
+        // 지렁이의 헤드가 포지션을 지나면 새로운 값 생성 후 지렁이 사이즈 하나 늘림
+        // 개선점 : 헤드가 먹이를 먹자마자 새로운 grow item이 생겨야 하고 바로 body 사이즈가 늘어나야함.
+        if (growitem.first == sk.heady && growitem.second == sk.headx) {
+            // map[growitem.first][growitem.second] = 0;
+            // item.setBody(sk.getBody(), sk.getLength());
+            growitem = item.getGrowItemPosition();
+            map[growitem.first][growitem.second] = 5;
+            // sk.plusBody();
+        }
+        // 포인즌 아이템이 안뜸 초기에 뜨다가 말음. 
+        // if (poisonitem.first == sk.getBody().front().first && poisonitem.second == sk.getBody().front().second) {
+        //     map[poisonitem.first][poisonitem.second] = 0;
+        //     item.setBody(sk.getBody(), sk.getLength());
+        //     poisonitem = item.getPoisonItemPosition();
+        //     map[poisonitem.first][poisonitem.second] = 6;
+        //     sk.minusBody();
+        // }
+
         
+
         // 5초가 지나면 아이템 재설정하는 건 민재형이랑 코드리뷰하고 설정
-        if((float)(endClock - startClock)/CLOCKS_PER_SEC >= 0.4){
+        if ((float)(endClock - startClock) / CLOCKS_PER_SEC >= 0.5) {
             if (!sk.move()) {
                 break;
             };
@@ -465,21 +469,21 @@ int main(){
     return 0;
 }
 
-void map_init(){
-    for(int i=0; i<MAP_SIZE; i++){
-        map[i][MAP_SIZE-1] = 1;
+void map_init() {
+    for (int i = 0; i < MAP_SIZE; i++) {
+        map[i][MAP_SIZE - 1] = 1;
         map[i][0] = 1;
-        map[MAP_SIZE-1][i] = 1;
+        map[MAP_SIZE - 1][i] = 1;
         map[0][i] = 1;
     }
     map[0][0] = 2;
-    map[0][MAP_SIZE-1] = 2;
-    map[MAP_SIZE-1][MAP_SIZE-1] = 2;
-    map[MAP_SIZE-1][0] = 2;
+    map[0][MAP_SIZE - 1] = 2;
+    map[MAP_SIZE - 1][MAP_SIZE - 1] = 2;
+    map[MAP_SIZE - 1][0] = 2;
 
-    map[MAP_SIZE/2][MAP_SIZE/2] = 3;
-    map[MAP_SIZE/2][MAP_SIZE/2+1] = 3;
-    map[MAP_SIZE/2][MAP_SIZE/2-1] = 4;
+    map[MAP_SIZE / 2][MAP_SIZE / 2] = 3;
+    map[MAP_SIZE / 2][MAP_SIZE / 2 + 1] = 3;
+    map[MAP_SIZE / 2][MAP_SIZE / 2 - 1] = 4;
 }
 
 void draw_snakewindow(WINDOW* snake_win) {
@@ -516,6 +520,10 @@ void draw_snakewindow(WINDOW* snake_win) {
             }
             else if (map[i - 4][j - 4] == 7) {  //Gate
                 wattron(snake_win, COLOR_PAIR(7));
+                mvwprintw(snake_win, i, j * 2, "  ");
+            }
+            else if (map[i - 4][j - 4] == 8) {  //Gate
+                wattron(snake_win, COLOR_PAIR(2));
                 mvwprintw(snake_win, i, j * 2, "  ");
             }
         }
