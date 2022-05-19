@@ -28,3 +28,26 @@ void draw_snakewindow(WINDOW *snake_win) {
         mvwprintw(snake_win, i, j * 2, "\n");
     }
 }
+
+
+    // snake_win = newwin(30,60,3,3);
+    // wbkgd(snake_win,COLOR_PAIR(5));
+    // wattron(snake_win, COLOR_PAIR(5));
+    // mvwprintw(snake_win, 1,1, "Snake_game window");
+    // wborder(snake_win, '|','|','-','-','+','+','+','+');
+    // wrefresh(snake_win);
+
+    // point_win = newwin(15,29,3,64);
+    // wbkgd(point_win,COLOR_PAIR(5));
+    // wattron(point_win, COLOR_PAIR(5));
+    // mvwprintw(point_win, 1,1, "Score_board");
+    // wborder(point_win, '|','|','-','-','+','+','+','+');
+    // wrefresh(point_win);
+
+
+    // mission_win = newwin(15,29,18,64);
+    // wbkgd(mission_win,COLOR_PAIR(5));
+    // wattron(mission_win, COLOR_PAIR(5));
+    // mvwprintw(mission_win, 1,1, "Mission");
+    // wborder(mission_win, '|','|','-','-','+','+','+','+');
+    // wrefresh(mission_win);
