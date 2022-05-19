@@ -4,7 +4,7 @@
 #include <time.h>
 #include <locale.h>
 #include <list>
-#include <queue>
+#include <deque>
 #define MAP_SIZE 21
 
 // 해야될 것
@@ -37,25 +37,28 @@ class Snake{
     int curDirection = WEST;
     int headx, heady;
     int length = 3;
-    queue<pair<int,int> > body; // (y,x)
+    deque<pair<int,int> > body; // (y,x)
 
 public:
 
     Snake(int map_size){
         heady = map_size/2;
         headx = map_size/2-1;
-        body.push({map_size/2, map_size/2+1});
-        body.push({map_size/2, map_size/2});
-        body.push({map_size/2, map_size/2-1});
+        body.push_back({map_size/2, map_size/2+1});
+        body.push_back({map_size/2, map_size/2});
+        body.push_back({map_size/2, map_size/2-1});
     }
 
-    queue<pair<int,int>> getBody(){
+    deque<pair<int,int>> getBody(){
         return body;
     }
 
     int getLength(){
         return length;
     }
+
+
+    
 
     //입력된 키를 기준으로 방향전환
     //방향전환시 죽는 경우 있음
@@ -74,13 +77,47 @@ public:
         curDirection = key;
         return true;
     }
+
+     //서: 0 북:1 동:2 남:3
+    void plusBody(){
+        length++;
+        pair<int,int> tail = body.back();
+        int y = tail.first, x = tail.second;
+        
+        if (curDirection==0){
+            tail.second = x+1;
+            body.push_back(tail);
+        }
+        else if (curDirection==1){
+            tail.first = y+1;
+            body.push_back(tail);
+        }
+        else if (curDirection==2){
+            tail.second = x-1;
+            body.push_back(tail);
+        }
+        else{
+            tail.first = y-1;
+            body.push_back(tail);
+        }
+    }
+
+    // scoreboard 랑 5초 지나면 다시 생기는거랑 에러 고침 & 성능 개선 
+
+    void minusBody(){
+        length--;
+        pair<int,int> tail = body.back();
+        int y = tail.first, x = tail.second;
+        body.pop_back();
+    }
+
     bool move_PlusBody(){
-        int popy = body.front().first;
-        int popx = body.front().second;
+        int pop_fronty = body.front().first;
+        int pop_frontx = body.front().second;
 
         length++; // 바디값이 늘어난 것을 명시, item 클래스에 바디 길이를 체크할 때 활용하기 때문에.
 
-        map[popy][popx] = 0;
+        map[pop_fronty][pop_frontx] = 0;
         map[heady][headx] = 4;
 
         if(curDirection==0){
@@ -102,19 +139,19 @@ public:
         }
 
         map[heady][headx] = 3;
-        body.push({heady,headx});
+        body.push_back({heady,headx});
         return true;
     }
 
     bool move_MinusBody(){
-        int popy = body.front().first;
-        int popx = body.front().second;
+        int pop_fronty = body.front().first;
+        int pop_frontx = body.front().second;
 
-        body.pop();
-        body.pop();
+        body.pop_front();
+        body.pop_front();
         length--; // 바디값이 늘어난 것을 명시, item 클래스에 바디 길이를 체크할 때 활용하기 때문에.
 
-        map[popy][popx] = 0;
+        map[pop_fronty][pop_frontx] = 0;
         map[heady][headx] = 4;
 
         if(curDirection==0){
@@ -136,16 +173,16 @@ public:
         }
 
         map[heady][headx] = 3;
-        body.push({heady,headx});
+        body.push_back({heady,headx});
         return true;
     }
 
     //현재 방향을 기준으로 움직임
     bool move(){
-        int popy = body.front().first;
-        int popx = body.front().second;
-        body.pop();
-        map[popy][popx] = 0;
+        int pop_fronty = body.front().first;
+        int pop_frontx = body.front().second;
+        body.pop_front();
+        map[pop_fronty][pop_frontx] = 0;
         map[heady][headx] = 4;
 
         if(curDirection==0){
@@ -167,7 +204,7 @@ public:
         }
 
         map[heady][headx] = 3;
-        body.push({heady,headx});
+        body.push_back({heady,headx});
         return true;
     }
 
@@ -194,13 +231,13 @@ public:
     }
     
     // snake의 바디값 설정
-    void setBody(queue<pair<int, int>> snake, int length){
+    void setBody(deque<pair<int, int>> snake, int length){
         bodyLength = length;
         for (int i=0; i< bodyLength; i++){
             pair<int, int> top = snake.front();
             body[i][0] = top.first;
             body[i][1] = top.second;
-            snake.pop();
+            snake.pop_front();
         }
     }
     
@@ -239,8 +276,9 @@ public:
                     return false;
                 }
             }
+            return true;
         }
-        return true;
+        return false;
     }
 };
 
@@ -373,10 +411,9 @@ int main(){
                 item.setBody(sk.getBody(), sk.getLength());
                 growitem = item.getGrowItemPosition();
                 map[growitem.first][growitem.second] = 5;
-                if (!sk.move_PlusBody()){
-                    break;
-                }
-                flag = true;
+                sk.plusBody();
+                draw_snakewindow(snake_win);
+                wrefresh(snake_win);
             }
             // 포인즌 아이템이 안뜸 초기에 뜨다가 말음. 
             if (poisonitem.first == sk.getBody().front().first && poisonitem.second == sk.getBody().front().second){
@@ -384,10 +421,9 @@ int main(){
                 item.setBody(sk.getBody(), sk.getLength());
                 poisonitem = item.getPoisonItemPosition();
                 map[poisonitem.first][poisonitem.second] = 6;
-                if (!sk.move_MinusBody()){
-                    break;
-                }
-                flag = true;
+                sk.minusBody();
+                draw_snakewindow(snake_win);
+                wrefresh(snake_win);
             }
 
         if (kbhit()) {
@@ -414,7 +450,7 @@ int main(){
         
         // 5초가 지나면 아이템 재설정하는 건 민재형이랑 코드리뷰하고 설정
         if((float)(endClock - startClock)/CLOCKS_PER_SEC >= 0.4){
-            if ((!flag) && !sk.move()) {
+            if (!sk.move()) {
                 break;
             };
             startClock = endClock;
