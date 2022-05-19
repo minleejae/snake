@@ -11,3 +11,7 @@
 #### 6 : Poison Item
 
 #### 7 : Gate
+
+### main 함수에서 map 변경시 -> snake가 지나가는 경우 초기화
+
+### while 함수에서 map 변경시 -> 고정적으로 유지
