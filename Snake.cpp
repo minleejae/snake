@@ -8,9 +8,19 @@ Snake::Snake(int map_size)
 {
     heady = map_size / 2;
     headx = map_size / 2 - 1;
-    body.push({ map_size / 2, map_size / 2 + 1 });
-    body.push({ map_size / 2, map_size / 2 });
-    body.push({ map_size / 2, map_size / 2 - 1 });
+    body.push_back({map_size / 2, map_size / 2 + 1});
+    body.push_back({map_size / 2, map_size / 2});
+    body.push_back({map_size / 2, map_size / 2 - 1});
+}
+
+deque<pair<int, int>> Snake::getBody()
+{
+    return body;
+}
+
+int Snake::getLength()
+{
+    return length;
 }
 
 //입력된 키를 기준으로 방향전환
@@ -31,8 +41,8 @@ bool Snake::turnDirection(int key)
     curDirection = key;
     return true;
 }
-    // set gate position randomly
-void Snake::setPosition(int& x, int& y)
+// set gate position randomly
+void Snake::setPosition(int &x, int &y)
 {
     int xORy = (rand() % 2);
     int zeroOr20 = (rand() % 2);
@@ -83,7 +93,7 @@ bool Snake::move(int map[][MAP_SIZE])
 {
     int popy = body.front().first;
     int popx = body.front().second;
-    body.pop();
+    body.pop_front();
     map[popy][popx] = 0;
     map[heady][headx] = 4;
 
@@ -102,6 +112,26 @@ bool Snake::move(int map[][MAP_SIZE])
     else
     {
         heady += 1;
+    }
+
+    // item 만났을 때 바디값 조절
+    if (map[heady][headx] == 5)
+    {
+        map[popy][popx] = 4;
+        length++; // 바디값이 늘어난 것을 명시, item 클래스에 바디 길이를 체크할 때 활용하기 때문에.
+    }
+    else if (map[heady][headx] == 6)
+    {
+        body.pop_front();
+        int body_lasty = body.front().first;
+        int body_lastx = body.front().second;
+        body.pop_front();
+        map[body_lasty][body_lastx] = 0;
+        length--;
+    }
+    else
+    {
+        body.pop_front();
     }
 
     if (map[heady][headx] == 1)
@@ -130,6 +160,6 @@ bool Snake::move(int map[][MAP_SIZE])
     }
 
     map[heady][headx] = 3;
-    body.push({ heady, headx });
+    body.push_back({heady, headx});
     return true;
 }
