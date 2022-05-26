@@ -106,18 +106,24 @@ int main()
     wborder(snake_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(snake_win);
 
-    int scoreInteger = 0;
-    string tmp = to_string(scoreInteger);
-    char const *scoreChar = tmp.c_str();
+        int growthInteger = 0;
+    string tmp_grow = to_string(growthInteger);
+    char const *growthChar = tmp_grow.c_str();
+
+    int poisonInteger = 0;
+    string tmp_poison = to_string(poisonInteger);
+    char const *poisonChar = tmp_poison.c_str();
 
     point_win = newwin(15, 29, 3, 64);
     wbkgd(point_win, COLOR_PAIR(1));
     wattron(point_win, COLOR_PAIR(8));
-    mvwprintw(point_win, 1, 1, "Score_board");
-
-    mvwprintw(point_win, 5, 3, "Score : ");
-    mvwprintw(point_win, 5, 11, scoreChar);
     
+    mvwprintw(point_win, 1, 1, "Score_board");
+    mvwprintw(point_win, 2, 1, "B: CL / ML");
+    mvwprintw(point_win, 3, 1, "+: "); mvwprintw(point_win, 3, 5, growthChar);
+    mvwprintw(point_win, 4, 1, "-: "); mvwprintw(point_win, 4, 5, poisonChar);
+    mvwprintw(point_win, 5, 1, "G: 사용 횟수");
+
     wborder(point_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(point_win);
 
@@ -126,8 +132,16 @@ int main()
     wbkgd(mission_win, COLOR_PAIR(1));
     wattron(mission_win, COLOR_PAIR(8));
     mvwprintw(mission_win, 1, 1, "Mission");
+    
+    mvwprintw(mission_win, 2, 1, "B: 10 ("); mvwprintw(mission_win, 2, 9, ")");
+    mvwprintw(mission_win, 3, 1, "+: 5 ("); mvwprintw(mission_win, 3, 8, ")");
+    mvwprintw(mission_win, 4, 1, "-: 2 ("); mvwprintw(mission_win, 4, 8, ")");
+    mvwprintw(mission_win, 5, 1, "G: 1 ("); mvwprintw(mission_win, 5, 8, ")");
+
+    
     wborder(mission_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(mission_win);
+
 
 
     int key;
@@ -201,8 +215,8 @@ int main()
             map[growitem.first][growitem.second] = 5;
 
             
-            scoreChar = returnScore(++scoreInteger);
-            mvwprintw(point_win, 5, 11, scoreChar);
+            growthChar = returnScore(++growthInteger);
+            mvwprintw(point_win, 3, 5, growthChar);
             wrefresh(point_win);
         }
 
@@ -212,6 +226,20 @@ int main()
             item.setBody(sk.getBody(), sk.getLength());
             poisonitem = item.getPoisonItemPosition();
             map[poisonitem.first][poisonitem.second] = 6;
+
+            poisonChar = returnScore(++poisonInteger);
+            mvwprintw(point_win, 4, 5, poisonChar);
+            wrefresh(point_win);
+        }
+
+        if (growthInteger == 5){
+            mvwprintw(mission_win,3, 7, "V");mvwprintw(mission_win,3, 8, ")");
+            wrefresh(mission_win);
+        }
+
+        if (poisonInteger == 2){
+            mvwprintw(mission_win,4, 7, "V");mvwprintw(mission_win,4, 8, ")");
+            wrefresh(mission_win);
         }
 
         if (countSecond == 10){
