@@ -79,107 +79,6 @@ public:
         return true;
     }
 
-    //서: 0 북:1 동:2 남:3
-    void plusBody() {
-        length++;
-        pair<int, int> tail = body.front();
-        int y = tail.first, x = tail.second;
-        body.push_front(tail);
-
-        // if (curDirection == 0) {
-        //     tail.second = x + 1;
-        //     body.push_back(tail);
-        // }
-        // else if (curDirection == 1) {
-        //     tail.first = y + 1;
-        //     body.push_back(tail);
-        // }
-        // else if (curDirection == 2) {
-        //     tail.second = x - 1;
-        //     body.push_back(tail);
-        // }
-        // else {
-        //     tail.first = y - 1;
-        //     body.push_back(tail);
-        // }
-        // map[tail.first][tail.second] = 8;
-    }
-
-    // scoreboard 랑 5초 지나면 다시 생기는거랑 에러 고침 & 성능 개선 
-
-    void minusBody() {
-        length--;
-        pair<int, int> tail = body.back();
-        int y = tail.first, x = tail.second;
-        body.pop_back();
-    }
-
-    bool move_PlusBody() {
-        int pop_fronty = body.front().first;
-        int pop_frontx = body.front().second;
-
-        length++; // 바디값이 늘어난 것을 명시, item 클래스에 바디 길이를 체크할 때 활용하기 때문에.
-
-        map[pop_fronty][pop_frontx] = 0;
-        map[heady][headx] = 4;
-
-        if (curDirection == 0) {
-            headx -= 1;
-        }
-        else if (curDirection == 1) {
-            heady -= 1;
-        }
-        else if (curDirection == 2) {
-            headx += 1;
-        }
-        else {
-            heady += 1;
-        }
-
-        //벽이나 어떤 이벤트 생기나 확인
-        if (!check()) {
-            return false;
-        }
-
-        map[heady][headx] = 3;
-        body.push_back({ heady,headx });
-        return true;
-    }
-
-    bool move_MinusBody() {
-        int pop_fronty = body.front().first;
-        int pop_frontx = body.front().second;
-
-        body.pop_front();
-        body.pop_front();
-        length--; // 바디값이 늘어난 것을 명시, item 클래스에 바디 길이를 체크할 때 활용하기 때문에.
-
-        map[pop_fronty][pop_frontx] = 0;
-        map[heady][headx] = 4;
-
-        if (curDirection == 0) {
-            headx -= 1;
-        }
-        else if (curDirection == 1) {
-            heady -= 1;
-        }
-        else if (curDirection == 2) {
-            headx += 1;
-        }
-        else {
-            heady += 1;
-        }
-
-        //벽이나 어떤 이벤트 생기나 확인
-        if (!check()) {
-            return false;
-        }
-
-        map[heady][headx] = 3;
-        body.push_back({ heady,headx });
-        return true;
-    }
-
     //현재 방향을 기준으로 움직임
     bool move() {
         int pop_fronty = body.front().first;
@@ -200,9 +99,26 @@ public:
         else {
             heady += 1;
         }
-
-        if(map[heady][headx] != 5) body.pop_front();
-        else map[pop_fronty][pop_frontx] = 4;
+        
+        // item 만났을 때 바디값 조절
+        if(map[heady][headx] == 5){
+            map[pop_fronty][pop_frontx] = 4;
+            length++;// 바디값이 늘어난 것을 명시, item 클래스에 바디 길이를 체크할 때 활용하기 때문에.
+        }
+        else if (map[heady][headx] == 6){
+            body.pop_front();
+            int body_lasty = body.front().first;
+            int body_lastx = body.front().second;
+            body.pop_front();
+            map[body_lasty][body_lastx] = 0;
+            length--;
+        }
+        else{
+            body.pop_front();
+        }
+        
+        
+        
         //벽이나 어떤 이벤트 생기나 확인
         if (!check()) {
             return false;
@@ -328,6 +244,12 @@ void sleep(float seconds) {
     return;
 }
 
+const char* returnScore(int score){
+    string tmp = to_string(score);
+    char const *result = tmp.c_str();
+    return result;
+}
+
 void draw_snakewindow(WINDOW* snake_win);
 
 int main() {
@@ -365,10 +287,19 @@ int main() {
     wborder(snake_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(snake_win);
 
+    
+    int scoreInteger = 0;
+    string tmp = to_string(scoreInteger);
+    char const *scoreChar = tmp.c_str();
+
     point_win = newwin(15, 29, 3, 64);
     wbkgd(point_win, COLOR_PAIR(1));
     wattron(point_win, COLOR_PAIR(8));
     mvwprintw(point_win, 1, 1, "Score_board");
+
+    mvwprintw(point_win, 5, 3, "Score : ");
+    mvwprintw(point_win, 5, 11, scoreChar);
+    
     wborder(point_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(point_win);
 
@@ -407,9 +338,13 @@ int main() {
 
     pair<int, int> poisonitem = item.getPoisonItemPosition();
     map[poisonitem.first][poisonitem.second] = 6;
+    
+    int countSecond = 0;
 
     while (1) {
-        bool flag = false;
+        if (sk.length < 3){
+            break;
+        }
         if (kbhit()) {
             key = getch();
             if (key == 259) {
@@ -435,25 +370,42 @@ int main() {
         // 지렁이의 헤드가 포지션을 지나면 새로운 값 생성 후 지렁이 사이즈 하나 늘림
         // 개선점 : 헤드가 먹이를 먹자마자 새로운 grow item이 생겨야 하고 바로 body 사이즈가 늘어나야함.
         if (growitem.first == sk.heady && growitem.second == sk.headx) {
-            // map[growitem.first][growitem.second] = 0;
-            // item.setBody(sk.getBody(), sk.getLength());
+            map[growitem.first][growitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
             growitem = item.getGrowItemPosition();
             map[growitem.first][growitem.second] = 5;
-            // sk.plusBody();
-        }
-        // 포인즌 아이템이 안뜸 초기에 뜨다가 말음. 
-        // if (poisonitem.first == sk.getBody().front().first && poisonitem.second == sk.getBody().front().second) {
-        //     map[poisonitem.first][poisonitem.second] = 0;
-        //     item.setBody(sk.getBody(), sk.getLength());
-        //     poisonitem = item.getPoisonItemPosition();
-        //     map[poisonitem.first][poisonitem.second] = 6;
-        //     sk.minusBody();
-        // }
 
-        
+            
+            scoreChar = returnScore(++scoreInteger);
+            mvwprintw(point_win, 5, 11, scoreChar);
+            wrefresh(point_win);
+        }
+
+        // 포인즌 아이템이 안뜸 초기에 뜨다가 말음. 
+        if (poisonitem.first == sk.heady && poisonitem.second == sk.headx) {
+            map[poisonitem.first][poisonitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            poisonitem = item.getPoisonItemPosition();
+            map[poisonitem.first][poisonitem.second] = 6;
+        }
+
+        if (countSecond == 10){
+            map[growitem.first][growitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            growitem = item.getGrowItemPosition();
+            map[growitem.first][growitem.second] = 5;
+
+            map[poisonitem.first][poisonitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            poisonitem = item.getPoisonItemPosition();
+            map[poisonitem.first][poisonitem.second] = 6;
+
+            countSecond = 0;
+        }
 
         // 5초가 지나면 아이템 재설정하는 건 민재형이랑 코드리뷰하고 설정
         if ((float)(endClock - startClock) / CLOCKS_PER_SEC >= 0.5) {
+            countSecond++;
             if (!sk.move()) {
                 break;
             };
