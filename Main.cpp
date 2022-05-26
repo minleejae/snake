@@ -5,6 +5,7 @@
 #include <ncurses.h>
 #include "Snake.h"
 #include "Snake_map.h"
+#include "Item.h"
 #define MAP_SIZE 21
 
 // 해야될 것
@@ -31,31 +32,6 @@ class Point
     int mission_growItem;
     int mission_poisonItem;
     int mission_useGate;
-};
-
-
-class growItem
-{
-    int x, y;
-    static int cnt;
-    int time = 0;
-
-    // void timeout(){
-
-    // }
-};
-
-class poisonItem
-{
-    int x, y;
-    static int cnt;
-    int time = 0;
-
-    // void timeout(){
-    //     if(time>=5){
-
-    //     }
-    // }
 };
 
 
@@ -87,6 +63,11 @@ void sleep(float seconds)
 void draw_snakewindow(WINDOW *snake_win);
 void map_init();
 
+const char* returnScore(int score){
+    string tmp = to_string(score);
+    char const *result = tmp.c_str();
+    return result;
+}
 
 int main()
 {
@@ -125,10 +106,18 @@ int main()
     wborder(snake_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(snake_win);
 
+    int scoreInteger = 0;
+    string tmp = to_string(scoreInteger);
+    char const *scoreChar = tmp.c_str();
+
     point_win = newwin(15, 29, 3, 64);
     wbkgd(point_win, COLOR_PAIR(1));
     wattron(point_win, COLOR_PAIR(8));
     mvwprintw(point_win, 1, 1, "Score_board");
+
+    mvwprintw(point_win, 5, 3, "Score : ");
+    mvwprintw(point_win, 5, 11, scoreChar);
+    
     wborder(point_win, '|', '|', '-', '-', '+', '+', '+', '+');
     wrefresh(point_win);
 
@@ -158,6 +147,18 @@ int main()
     clock_t endClock;
 
     startClock = clock();
+
+    Item item = Item();
+    item.setBody(sk.getBody(), sk.getLength());
+
+    pair<int, int> growitem = item.getGrowItemPosition();
+    map[growitem.first][growitem.second] = 5;
+
+    pair<int, int> poisonitem = item.getPoisonItemPosition();
+    map[poisonitem.first][poisonitem.second] = 6;
+    
+    int countSecond = 0;
+
     while (1)
     {
         // view gate
@@ -192,6 +193,40 @@ int main()
             refresh();
         }
         endClock = clock();
+
+        if (growitem.first == sk.heady && growitem.second == sk.headx) {
+            map[growitem.first][growitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            growitem = item.getGrowItemPosition();
+            map[growitem.first][growitem.second] = 5;
+
+            
+            scoreChar = returnScore(++scoreInteger);
+            mvwprintw(point_win, 5, 11, scoreChar);
+            wrefresh(point_win);
+        }
+
+        // 포인즌 아이템이 안뜸 초기에 뜨다가 말음. 
+        if (poisonitem.first == sk.heady && poisonitem.second == sk.headx) {
+            map[poisonitem.first][poisonitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            poisonitem = item.getPoisonItemPosition();
+            map[poisonitem.first][poisonitem.second] = 6;
+        }
+
+        if (countSecond == 10){
+            map[growitem.first][growitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            growitem = item.getGrowItemPosition();
+            map[growitem.first][growitem.second] = 5;
+
+            map[poisonitem.first][poisonitem.second] = 0;
+            item.setBody(sk.getBody(), sk.getLength());
+            poisonitem = item.getPoisonItemPosition();
+            map[poisonitem.first][poisonitem.second] = 6;
+
+            countSecond = 0;
+        }
 
         if ((float)(endClock - startClock) / CLOCKS_PER_SEC >= 0.4)
         {
