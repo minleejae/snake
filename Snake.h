@@ -14,7 +14,7 @@ public:
     int curDirection = WEST;
     int headx, heady;
     int length = 3;
-    std::queue<std::pair<int, int>> body; // (y,x)
+    std::deque<std::pair<int, int>> body; // (y,x)
 // public:
     // 게이트는 하나만 존재하면 된다.  snake 객체에 정의
     int gate[2][2] = { { 0, 0 }, { 0, 0 } }; // [ [y1, x1], [y2, x2] ]
@@ -24,6 +24,9 @@ public:
     void setPosition(int &x, int &y);
 
     void makeGate();
+
+    deque<pair<int, int>> getBody();
+    int getLength();
 
     Snake(int map_size);
     //입력된 키를 기준으로 방향전환
