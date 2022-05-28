@@ -6,6 +6,8 @@
 
 #### 3: Head of Snake
 
+#### 4: Body of Snake
+
 #### 5 : Growth Item
 
 #### 6 : Poison Item
