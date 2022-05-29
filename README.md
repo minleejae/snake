@@ -9,17 +9,17 @@
 
 
 ----------------------------
-#2022.05.29 주요 update 내용
+**2022.05.29 주요 update 내용**
 
 
-##1. map을 map.h파일과 map.cpp파일로 따로 두어서 전역변수로 설정함(Gate또한 같은 파일에서 관리)
+**1. map을 map.h파일과 map.cpp파일로 따로 두어서 전역변수로 설정함(Gate또한 같은 파일에서 관리)**
 - map을 stage에 종속되어 업데이트 해주는 map_init(int stage) 함수를 만듦
 - map을 전역변수로 두어서 관리함으로서 Item과 Gate를 만드는 구조를 보다 간결하게 구현함.
 
 
 
 
-##2. item 생성 방법 개선
+**2. item 생성 방법 개선**
 - 기존에는 growth와 poison이 지속적으로 1개 1개씩 나오도록 구현했는데
 - ppt에서 growth와 poison을 합쳐서 최대 3개까지 등장할 수 있도록 구조를 변경함
 - 생성되는 아이템 중에서 growth와 poison중 선택되는 것은 랜덤으로 1/2 확률로 등장하게 함(rand함수 이용)
@@ -38,7 +38,7 @@
 
 
 
-##3. Gate 생성 방법 개선
+**3. Gate 생성 방법 개선**
 - map을 전역변수로 두면서 map_init(int stage)를 통해 각 stage 별로 다른 wall 구조를 생성하도록 구현했음
 - 이에따라 Gate 생성 방법도 Item과 유사하게 전체 맵을 보면서 immune wall이 아닌 wall의 위치 2개를 random하게 찾아 Gate를 생성하도록 만듦
 - 기존에 Gate를 이동할 때 반대편 Gate에 머리가 생기는 것을 Gate 이후 다음 칸 부터 생기도록 개선
@@ -48,7 +48,7 @@
 
 
 
-##4. Point와 Mission 달성 여부를 나타내기 위한 Point, Mission Class 생성
+**4. Point와 Mission 달성 여부를 나타내기 위한 Point, Mission Class 생성 **
 - 두 클래스 모두 setter getter method를 두어서 snake가 move함수를 호출할 때마다 변동사항을
 - 두 객체의 member instance에 update해주고
 - 0.5초 간격으로 update되는 값을 바탕으로 display해줌
@@ -56,7 +56,7 @@
 
 
 
-##5. Display.h Display.cpp를 통해 Point와 Mission의 정보를 가시적으로 나타내주는 함수를 만듦
+**5. Display.h Display.cpp를 통해 Point와 Mission의 정보를 가시적으로 나타내주는 함수를 만듦**
 - 더불어 해당 Stage를 clear하거나 Snake가 죽는 경우, 아니면 모든 Stage를 clear해서 게임이 끝나는 경우
 - notice 창을 만들어 게임의 상태를 알려줌
 
