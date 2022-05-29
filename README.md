@@ -48,7 +48,7 @@
 
 
 
-**4. Point와 Mission 달성 여부를 나타내기 위한 Point, Mission Class 생성 **
+**4. Point와 Mission 달성 여부를 나타내기 위한 Point, Mission Class 생성**
 - 두 클래스 모두 setter getter method를 두어서 snake가 move함수를 호출할 때마다 변동사항을
 - 두 객체의 member instance에 update해주고
 - 0.5초 간격으로 update되는 값을 바탕으로 display해줌
