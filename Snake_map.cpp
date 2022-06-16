@@ -1,84 +1,121 @@
 #include <iostream>
 #include "Snake_map.h"
-#define MAP_SIZE 21
 
-void map_random_color(int map[][MAP_SIZE])
-{
-    srand(time(NULL));
+int stage = 0;
+bool waitGate = 1;
+int forGate = 10;
+int gate[2][GATE_SIZE] = { { 0, 0 }, { 0, 0 } };
+int map[MAP_SIZE][MAP_SIZE];
 
-    int x = rand();
-    int y = rand();
-    x %= MAP_SIZE;
-    y %= MAP_SIZE;
-    while (map[x][y] != 0)
-    {
-        x = rand();
-        y = rand();
-        x %= MAP_SIZE;
-        y %= MAP_SIZE;
+void map_init(int stage) {
+    for (int i = 0; i < MAP_SIZE; i++) {
+        for (int j = 0; j < MAP_SIZE; j++) {
+            map[i][j] = 0;
+        }
     }
-    // cout << x << ' ' << y <<'\n';
-    map[x][y] = 1;
+
+    for (int i = 0; i < MAP_SIZE; i++) {
+        map[i][MAP_SIZE - 1] = WALL;
+        map[i][0] = WALL;
+        map[MAP_SIZE - 1][i] = WALL;
+        map[0][i] = WALL;
+    }
+
+    map[MAP_SIZE / 2][MAP_SIZE / 2] = SNAKE_BODY;
+    map[MAP_SIZE / 2][MAP_SIZE / 2 + 1] = SNAKE_BODY;
+    map[MAP_SIZE / 2][MAP_SIZE / 2 - 1] = SNAKE_BODY;
+
+
+    //stage별로 wall 다르게
+    if (stage == 1) {
+        for (int i = 0; i < 10; i++) {
+            map[8][i] = 2;
+        }
+    }
+    else if (stage == 2) {
+        for (int i = 3; i < 14; i++) {
+            map[5][i] = 2;
+        }
+
+        for (int i = 3; i < 14; i++) {
+            map[i][3] = 2;
+        }
+    }
+    else if (stage == 3) {
+        for (int i = 4; i < 10; i++) {
+            map[i][i] = 2;
+        }
+    }
+    else if (stage == 4) {
+        for (int i = 4; i < 10; i++) {
+            map[i][i] = 2;
+        }
+        for (int i = 4; i < 10; i++) {
+            map[10 - i][i] = 2;
+        }
+
+        for (int i = 19; i >= 12; i--) {
+            map[i][i] = 2;
+        }
+        for (int i = 19; i >= 15; i--) {
+            map[21 - i][i] = 2;
+        }
+    }
+
+    //immune wall 적용
+    findImmuneWall();
 }
 
+//wall과 gate가 등장하면 안되는 ImmuneWall 구분
+void findImmuneWall() {
+    int dy[4] = { 0,1,0,-1 };
+    int dx[4] = { 1,0,-1,0 };
 
-void map_init(int map[][MAP_SIZE])
-{
-    for (int i = 0; i < MAP_SIZE; i++)
-    {
-        map[i][MAP_SIZE - 1] = 1;
-        map[i][0] = 1;
-        map[MAP_SIZE - 1][i] = 1;
-        map[0][i] = 1;
-    }
-    map[0][0] = 2;
-    map[0][MAP_SIZE - 1] = 2;
-    map[MAP_SIZE - 1][MAP_SIZE - 1] = 2;
-    map[MAP_SIZE - 1][0] = 2;
+    for (int i = 0; i < MAP_SIZE; i++) {
+        for (int j = 0; j < MAP_SIZE; j++) {
+            if (map[i][j] == 2) {
 
-    map[MAP_SIZE / 2][MAP_SIZE / 2] = 3;
-    map[MAP_SIZE / 2][MAP_SIZE / 2 + 1] = 3;
-    map[MAP_SIZE / 2][MAP_SIZE / 2 - 1] = 4;
-}
+                int cnt = 0;
+                for (int k = 0; k < 4; k++) {
+                    int ny = i + dy[k];
+                    int nx = j + dx[k];
 
+                    if (ny < 0 || ny >= MAP_SIZE || nx < 0 || nx >= MAP_SIZE) continue;
+                    if (map[ny][nx] != 1 && map[ny][nx] != 2) cnt++;
+                }
 
-
-void draw_snakewindow(WINDOW* snake_win, int map[][MAP_SIZE]) {
-    for (int i = 4; i < MAP_SIZE + 4; i++) {
-        int j = 4;
-        for (; j < MAP_SIZE + 4; j++) {
-            if (map[i - 4][j - 4] == 0) { //white(빈칸)
-                wattron(snake_win, COLOR_PAIR(1));
-                mvwprintw(snake_win, i, j * 2, "  ");
-                // attroff(COLOR_PAIR(1));
-            }
-            else if (map[i - 4][j - 4] == 1 || map[i - 4][j - 4] == 2) { //wall
-                wattron(snake_win, COLOR_PAIR(2));
-                mvwprintw(snake_win, i, j * 2, "  ");
-                // attroff(COLOR_PAIR(2));
-            }
-            else if (map[i - 4][j - 4] == 3) {  //head of snake
-                wattron(snake_win, COLOR_PAIR(3));
-                mvwprintw(snake_win, i, j * 2, "  ");
-                // attroff(COLOR_PAIR(3));
-            }
-            else if (map[i - 4][j - 4] == 4) {  //head of snake
-                wattron(snake_win, COLOR_PAIR(4));
-                mvwprintw(snake_win, i, j * 2, "  ");
-            }
-            else if (map[i - 4][j - 4] == 5) {  // growth item
-                wattron(snake_win, COLOR_PAIR(5));
-                mvwprintw(snake_win, i, j * 2, "  ");
-            }
-            else if (map[i - 4][j - 4] == 6) {  //posion item
-                wattron(snake_win, COLOR_PAIR(6));
-                mvwprintw(snake_win, i, j * 2, "  ");
-            }
-            else if (map[i - 4][j - 4] == 7) {  //Gate
-                wattron(snake_win, COLOR_PAIR(7));
-                mvwprintw(snake_win, i, j * 2, "  ");
+                //사방이 wall인 immune wall
+                if (cnt == 0) map[i][j] = 1;
             }
         }
-        mvwprintw(snake_win, i, j * 2, "\n");
     }
+}
+
+
+// immune wall중에서 Gate 생성
+void makeGate() {
+    int x1 = rand() % MAP_SIZE;
+    int y1 = rand() % MAP_SIZE;
+
+    int x2 = rand() % MAP_SIZE;
+    int y2 = rand() % MAP_SIZE;
+
+    while (map[y1][x1] != 2) {
+        x1 = rand() % MAP_SIZE;
+        y1 = rand() % MAP_SIZE;
+    }
+
+    map[y1][x1] = GATE;
+
+    while (map[y2][x2] != 2) {
+        x2 = rand() % MAP_SIZE;
+        y2 = rand() % MAP_SIZE;
+    }
+
+    map[y2][x2] = GATE;
+
+    gate[0][0] = y1;
+    gate[0][1] = x1;
+    gate[1][0] = y2;
+    gate[1][1] = x2;
 }
