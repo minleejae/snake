@@ -1,74 +1,67 @@
-#include <iostream>
 #include "Item.h"
 using namespace std;
 
-Item::Item()
-{
-    grow_x = 0;
-    grow_y = 0;
-    poison_x = 20;
-    poison_y = 20;
+Item::Item() {
+    total_item = 0;
 }
 
-// snake의 바디값 설정
-void Item::setBody(deque<pair<int, int>> snake, int length)
-{
-    bodyLength = length;
-    for (int i = 0; i < bodyLength; i++)
-    {
-        pair<int, int> top = snake.front();
-        body[i][0] = top.first;
-        body[i][1] = top.second;
-        // snake.pop_front();
-    }
-}
+void Item::produceItem() {
+    if (total_item < 3) {
+        //현재 총 아이템이 3개 미만이라면 랜덤으로 poision이나 growth중 새로운 아이템 생성
+        int newItem = (rand() % 2) + 5;
+        
+        //item이 언제생성되었는지 기록
+        clock_t now = clock();
 
-// 바디값이 아닌 위치를 범위 내에서 랜덤 설정(1~19)
-// posisonItem이랑 위치 겹치면 안되기 때문에 main에서 비교 후 다시 설정해주는 작업해야됨
-pair<int, int> Item::getGrowItemPosition()
-{
-    srand(time(NULL));
-    while (true)
-    {
-        int y = rand() % 20;
-        int x = rand() % 20;
-        if (positionIsSuited(y, x) && (y != poison_y && x != poison_x))
-        {
-            grow_y = y;
-            grow_x = x;
-            return make_pair(y, x);
-        }
-    }
-}
+        int y = rand() % MAP_SIZE;
+        int x = rand() % MAP_SIZE;
+        if (map[y][x] == 0) {
+            map[y][x] = newItem;
+            total_item++;
 
-pair<int, int> Item::getPoisonItemPosition()
-{
-    srand(time(NULL));
-    while (true)
-    {
-        int y = rand() % 20;
-        int x = rand() % 20;
-        if (positionIsSuited(y, x) && (y != grow_y && x != grow_x))
-        {
-            poison_y = y;
-            poison_x = x;
-            return make_pair(y, x);
-        }
-    }
-}
-
-bool Item::positionIsSuited(int y, int x)
-{
-    if (y != 0 && x != 0)
-    {
-        for (int i = 0; i < bodyLength; i++)
-        {
-            if (y == body[i][0] || x == body[i][1])
-            {
-                return false;
+            for (int i = 0; i < 3; i++) {
+                //remove에서 y값을 -1로 만들어준다.
+                if (iv[i].y == -1) {
+                    iv[i].y = y;
+                    iv[i].x = x;
+                    iv[i].time = now;
+                    break;
+                }
             }
         }
-        return true;
     }
-    return false;
+}
+
+void Item::addTotalItem() {
+    total_item++;
+}
+
+void Item::minusTotalItem() {
+    total_item--;
+}
+
+//시간이 지나서 없어지는 경우
+void Item::removeItem() {
+    if (total_item > 0) {
+        clock_t now = clock();
+        for (int i = 0; i < 3; i++) {
+            if ((float(now - iv[i].time) / CLOCKS_PER_SEC > 5) && (iv[i].y > 0)) {
+                map[iv[i].y][iv[i].x] = 0;
+                iv[i].y = -1;
+                total_item--;
+            }
+        }
+    }
+}
+
+//Snake가 먹어서 없어지는 경우
+void Item::removeItem(int y, int x) {
+    if (total_item > 0) {
+        for (int i = 0; i < 3; i++) {
+            if (iv[i].y == y && iv[i].x == x) {
+                iv[i].y = -1;
+                total_item--;
+            }
+        }
+    }
 }
