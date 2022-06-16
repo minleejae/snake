@@ -7,6 +7,8 @@
 
 
 
+https://www.youtube.com/watch?v=qFi_nRcVGxs
+
 
 ----------------------------
 **2022.05.29 주요 update 내용**
